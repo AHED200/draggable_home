@@ -141,8 +141,6 @@ class _DraggableHomeFullyCustomizableState
 
   @override
   void dispose() {
-    isFullyExpanded.close();
-    isFullyCollapsed.close();
     super.dispose();
   }
 
@@ -154,9 +152,7 @@ class _DraggableHomeFullyCustomizableState
 
     final double topPadding = MediaQuery.of(context).padding.top;
 
-    final double expandedHeight =
-        appBarHeight +
-            widget.bottomHeaderHeight;
+    final double expandedHeight = appBarHeight + widget.bottomHeaderHeight;
 
     final double fullyExpandedHeight =
         MediaQuery.of(context).size.height * (widget.stretchMaxHeight);
