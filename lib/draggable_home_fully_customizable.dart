@@ -204,7 +204,7 @@ class _DraggableHomeFullyCustomizableState
       key: widget.nestedScrollKey,
       controller: widget.scrollController,
       floatHeaderSlivers: widget.floatHeader,
-      physics: widget.physics,
+      physics: const AlwaysScrollableScrollPhysics(),
       headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) => [
         SliverOverlapAbsorber(
           handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
