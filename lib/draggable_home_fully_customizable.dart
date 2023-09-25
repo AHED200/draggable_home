@@ -92,6 +92,8 @@ class DraggableHomeFullyCustomizable extends StatefulWidget {
 
   final Key? nestedScrollKey;
 
+  final bool floatHeader;
+
   /// This will create DraggableHome.
   const DraggableHomeFullyCustomizable({
     Key? key,
@@ -124,6 +126,7 @@ class DraggableHomeFullyCustomizable extends StatefulWidget {
     required this.bottomHeader,
     required this.bottomHeaderHeight,
     this.nestedScrollKey,
+    this.floatHeader = false,
   })  : assert(headerExpandedHeight > 0.0 &&
             headerExpandedHeight < stretchMaxHeight),
         assert(
@@ -200,7 +203,7 @@ class _DraggableHomeFullyCustomizableState
     return NestedScrollView(
       key: widget.nestedScrollKey,
       controller: widget.scrollController,
-      floatHeaderSlivers: true,
+      floatHeaderSlivers: widget.floatHeader,
       physics: widget.physics,
       headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) => [
         SliverOverlapAbsorber(
