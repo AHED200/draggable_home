@@ -339,7 +339,7 @@ class _DraggableHomeFullyCustomizableState
       ],
       body: Builder(builder: (context) {
         return CustomScrollView(
-          physics: widget.physics ?? const BouncingScrollPhysics(),
+          physics: widget.physics ?? const AlwaysScrollableScrollPhysics(),
           // controller: widget.scrollController,
           primary: true,
           slivers: [
