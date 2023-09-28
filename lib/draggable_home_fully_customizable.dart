@@ -1,6 +1,7 @@
 library draggable_home;
 
 import 'package:draggable_home/SliverPinnedOverlapInjector.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -170,7 +171,9 @@ class _DraggableHomeFullyCustomizableState
         }
         //isFullyCollapsed
         if ((widget.scrollController?.position.extentBefore ?? 0) >
-            expandedHeight - AppBar().preferredSize.height - 40) {
+            expandedHeight -
+                AppBar().preferredSize.height -
+                widget.bottomHeaderHeight) {
           if (!(isFullyCollapsed.value)) isFullyCollapsed.add(true);
         } else {
           if ((isFullyCollapsed.value)) isFullyCollapsed.add(false);
@@ -179,17 +182,19 @@ class _DraggableHomeFullyCustomizableState
     });
     // }
 
-    return Scaffold(
-      backgroundColor:
-          widget.backgroundColor ?? Theme.of(context).scaffoldBackgroundColor,
-      drawer: widget.drawer,
-      body: sliver(context, appBarHeight, fullyExpandedHeight, expandedHeight,
-          topPadding),
-      bottomSheet: widget.bottomSheet,
-      bottomNavigationBar: widget.bottomNavigationBar,
-      floatingActionButton: widget.floatingActionButton,
-      floatingActionButtonLocation: widget.floatingActionButtonLocation,
-      floatingActionButtonAnimator: widget.floatingActionButtonAnimator,
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor:
+            widget.backgroundColor ?? Theme.of(context).scaffoldBackgroundColor,
+        drawer: widget.drawer,
+        body: sliver(context, appBarHeight, fullyExpandedHeight, expandedHeight,
+            topPadding),
+        bottomSheet: widget.bottomSheet,
+        bottomNavigationBar: widget.bottomNavigationBar,
+        floatingActionButton: widget.floatingActionButton,
+        floatingActionButtonLocation: widget.floatingActionButtonLocation,
+        floatingActionButtonAnimator: widget.floatingActionButtonAnimator,
+      ),
     );
   }
 
@@ -201,159 +206,144 @@ class _DraggableHomeFullyCustomizableState
     double topPadding,
   ) {
     return NestedScrollView(
-      key: widget.nestedScrollKey,
-      controller: widget.scrollController,
-      floatHeaderSlivers: widget.floatHeader,
-      physics: const AlwaysScrollableScrollPhysics(),
-      headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) => [
-        SliverOverlapAbsorber(
-          handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
-          // sliver: const SliverAppBar(
-          //   pinned: true,
-          //   elevation: 0,
-          //   backgroundColor: Colors.blue,
-          // ),
-          // sliver:
-          sliver: SliverSafeArea(
-            sliver: StreamBuilder<List<bool>>(
-              stream: CombineLatestStream.list<bool>([
-                isFullyCollapsed.stream,
-                isFullyExpanded.stream,
-              ]),
-              builder:
-                  (BuildContext context, AsyncSnapshot<List<bool>> snapshot) {
-                final List<bool> streams = (snapshot.data ?? [false, false]);
-                final bool fullyCollapsed = streams[0];
-                final bool fullyExpanded = streams[1];
+        key: widget.nestedScrollKey,
+        controller: widget.scrollController,
+        floatHeaderSlivers: widget.floatHeader,
+        // physics: widget.physics,
 
-                return SliverAppBar(
-                  floating: true,
-                  primary: false,
-                  backgroundColor: !fullyCollapsed
-                      ? widget.backgroundColor
-                      : widget.appBarColor,
-                  leading: widget.alwaysShowLeadingAndAction
-                      ? widget.leading
-                      : !fullyCollapsed
-                          ? const SizedBox()
-                          : widget.leading,
-                  actions: widget.alwaysShowLeadingAndAction
-                      ? widget.actions
-                      : !fullyCollapsed
-                          ? []
-                          : widget.actions,
-                  elevation: 0,
-                  pinned: true,
-                  stretch: true,
-                  centerTitle: widget.centerTitle,
-                  bottom: PreferredSize(
-                      preferredSize: const Size.fromHeight(0.0),
-                      child: Transform.translate(
-                          offset: const Offset(0, 0),
-                          child: widget.bottomHeader)),
-                  title: widget.alwaysShowTitle
-                      ? widget.title
-                      : AnimatedOpacity(
-                          opacity: fullyCollapsed ? 1 : 0,
-                          duration: const Duration(milliseconds: 100),
-                          child: widget.title,
+        headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) =>
+            [
+              SliverOverlapAbsorber(
+                handle:
+                    NestedScrollView.sliverOverlapAbsorberHandleFor(context),
+                sliver: StreamBuilder<List<bool>>(
+                  stream: CombineLatestStream.list<bool>([
+                    isFullyCollapsed.stream,
+                    isFullyExpanded.stream,
+                  ]),
+                  builder: (BuildContext context,
+                      AsyncSnapshot<List<bool>> snapshot) {
+                    final List<bool> streams =
+                        (snapshot.data ?? [false, false]);
+                    final bool fullyCollapsed = streams[0];
+                    final bool fullyExpanded = streams[1];
+
+                    return SliverSafeArea(
+                      sliver: SliverAppBar(
+                        floating: widget.floatHeader,
+                        primary: true,
+                        snap: false,
+                        elevation: 0,
+                        pinned: true,
+                        stretch: false,
+                        centerTitle: widget.centerTitle,
+                        backgroundColor: !fullyCollapsed
+                            ? widget.backgroundColor
+                            : widget.appBarColor,
+                        leading: widget.alwaysShowLeadingAndAction
+                            ? widget.leading
+                            : !fullyCollapsed
+                                ? const SizedBox()
+                                : widget.leading,
+                        actions: widget.alwaysShowLeadingAndAction
+                            ? widget.actions
+                            : !fullyCollapsed
+                                ? []
+                                : widget.actions,
+                        bottom: PreferredSize(
+                            preferredSize: const Size.fromHeight(0.0),
+                            child: widget.bottomHeader),
+                        title: widget.alwaysShowTitle
+                            ? widget.title
+                            : AnimatedOpacity(
+                                opacity: fullyCollapsed ? 1 : 0,
+                                duration: const Duration(milliseconds: 100),
+                                child: widget.title,
+                              ),
+                        collapsedHeight: appBarHeight,
+                        expandedHeight: fullyExpanded
+                            ? fullyExpandedHeight
+                            : expandedHeight,
+                        flexibleSpace: Stack(
+                          children: [
+                            FlexibleSpaceBar(
+                              background: Container(
+                                margin: const EdgeInsets.only(bottom: 0.2),
+                                child: fullyExpanded
+                                    ? (widget.expandedBody ?? const SizedBox())
+                                    : widget.headerWidget,
+                              ),
+                            ),
+                            Positioned(
+                              bottom: -1,
+                              left: 0,
+                              right: 0,
+                              child: roundedCorner(context),
+                            ),
+                            Positioned(
+                              bottom: 0 + widget.curvedBodyRadius,
+                              child: AnimatedContainer(
+                                padding:
+                                    const EdgeInsets.only(left: 10, right: 10),
+                                curve: Curves.easeInOutCirc,
+                                duration: const Duration(milliseconds: 100),
+                                height: fullyCollapsed
+                                    ? 0
+                                    : fullyExpanded
+                                        ? 0
+                                        : kToolbarHeight,
+                                width: MediaQuery.of(context).size.width,
+                                child: fullyCollapsed
+                                    ? const SizedBox()
+                                    : fullyExpanded
+                                        ? const SizedBox()
+                                        : widget.headerBottomBar ?? Container(),
+                              ),
+                            ),
+                          ],
                         ),
-                  collapsedHeight: appBarHeight,
-                  expandedHeight:
-                      fullyExpanded ? fullyExpandedHeight : expandedHeight,
-                  flexibleSpace: Stack(
-                    children: [
-                      FlexibleSpaceBar(
-                        background: Container(
-                          margin: const EdgeInsets.only(bottom: 0.2),
-                          child: fullyExpanded
-                              ? (widget.expandedBody ?? const SizedBox())
-                              : widget.headerWidget,
-                        ),
+                        stretchTriggerOffset: 1,
+                        onStretchTrigger: widget.fullyStretchable
+                            ? () async {
+                                if (!fullyExpanded) isFullyExpanded.add(true);
+                              }
+                            : null,
                       ),
-                      Positioned(
-                        bottom: -1,
-                        left: 0,
-                        right: 0,
-                        child: roundedCorner(context),
-                      ),
-                      Positioned(
-                        bottom: 0 + widget.curvedBodyRadius,
-                        child: AnimatedContainer(
-                          padding: const EdgeInsets.only(left: 10, right: 10),
-                          curve: Curves.easeInOutCirc,
-                          duration: const Duration(milliseconds: 100),
-                          height: fullyCollapsed
-                              ? 0
-                              : fullyExpanded
-                                  ? 0
-                                  : kToolbarHeight,
-                          width: MediaQuery.of(context).size.width,
-                          child: fullyCollapsed
-                              ? const SizedBox()
-                              : fullyExpanded
-                                  ? const SizedBox()
-                                  : widget.headerBottomBar ?? Container(),
-                        ),
-                      ),
-                    ],
-                  ),
-                  stretchTriggerOffset: widget.stretchTriggerOffset,
-                  onStretchTrigger: widget.fullyStretchable
-                      ? () async {
-                          if (!fullyExpanded) isFullyExpanded.add(true);
-                        }
-                      : null,
-                );
-              },
+                    );
+                  },
+                ),
+              ),
+            ],
+        body: Builder(builder: (context) {
+          return SafeArea(
+            child: ListView(
+              // controller: widget.scrollController,
+              primary: true,
+              physics: widget.physics,
+              children: widget.body,
             ),
-          ),
-        ),
+          );
+        })
+        // Builder(builder: (context) {
+        //   return CustomScrollView(
+        //     physics: widget.physics ?? const AlwaysScrollableScrollPhysics(),
+        //     // controller: widget.scrollController,
+        //     // primary: true,
+        //     slivers: [
+        //       // SliverToBoxAdapter(child: expandedUpArrow()),
+        //       ...widget.body,
+        //       SliverPinnedOverlapInjector(
+        //         // This is the flip side of the SliverOverlapAbsorber
+        //         // above.
+        //         handle:
+        //             NestedScrollView.sliverOverlapAbsorberHandleFor(context),
+        //       ),
+        //       // sliverList(context, appBarHeight + topPadding)
+        //     ],
+        //   );
+        // },
 
-        // SliverOverlapAbsorber(
-        //   handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
-        //   sliver: SliverAppBar(
-        //     pinned: true,
-        //      primary: false,
-        //     flexibleSpace: widget.bottomHeader,
-        //   ),
-        // ),
-
-        // SliverAppBar(
-        //   floating: true,
-        //   primary: false,
-        //   elevation: 0,
-        //   expandedHeight: 60,
-        //   pinned: true,
-        //   stretch: true,
-        //   // centerTitle: widget.centerTitle,
-        //   // bottom: widget.bottomHeader == null
-        //   //     ? null
-        //   //     : PreferredSize(
-        //   //         preferredSize: const Size.fromHeight(0.0),
-        //   //         child: Transform.translate(
-        //   //             offset: Offset(0, expandedHeight),
-        //   //             child: widget.bottomHeader!)),
-        //   flexibleSpace: widget.headerWidget,
-        // ),
-      ],
-      body: Builder(builder: (context) {
-        return CustomScrollView(
-          physics: widget.physics ?? const AlwaysScrollableScrollPhysics(),
-          // controller: widget.scrollController,
-          primary: true,
-          slivers: [
-            SliverPinnedOverlapInjector(
-              // This is the flip side of the SliverOverlapAbsorber
-              // above.
-              handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
-            ),
-            ...widget.body
-            // sliverList(context, appBarHeight + topPadding)
-          ],
         );
-      }),
-    );
   }
 
   Container roundedCorner(BuildContext context) {
@@ -404,7 +394,7 @@ class _DraggableHomeFullyCustomizableState
       builder: (context, snapshot) {
         return AnimatedContainer(
           duration: const Duration(milliseconds: 500),
-          height: (snapshot.data ?? false) ? 25 : 0,
+          height: (snapshot.data ?? false) ? 300 : 0,
           width: MediaQuery.of(context).size.width,
           child: Center(
             child: Icon(
